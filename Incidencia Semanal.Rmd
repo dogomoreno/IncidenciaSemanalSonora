@@ -8,7 +8,7 @@ output:
 
 El virus SARS-Cov-2, desde su detección confirmada en Wuhan, China a fines del año pasado, ha trastocado la vida de todos y cada uno de los países del mundo, México no ha sido la excepción. El 16 de marzo de 2020, la Secretaría de Salud del Gobierno del Estado de Sonora confirmó el primer caso de Covid-19 (la enfermedad asociada al virus), con lo que dio comienzo la contingencia epidemiológica en la Entidad. 
 
-Al día de hoy, 06 de diciembre de 2020 se han confirmado 44,301 casos, de los cuales se han recuperado 38,772 y lamentablemente han fallecido 3,473, con presencia del virus en 67 de los 72 municipios de la Entidad.
+Al día de hoy, 06 de diciembre de 2020, se han confirmado 44,611 casos, de los cuales se han recuperado 38,600 y lamentablemente han fallecido 3,476, con presencia del virus en 67 de los 72 municipios de la Entidad.
 
 La epidemia y sus efectos en la población son un fenómeno cambiante tanto en el espacio temporal como el geográfico, por lo que es conveniente observar de manera detallada las tendencias en los municipios para tomar decisiones informadas que pudiesen afectar la vida diaria de los sonorenses.
 
@@ -367,7 +367,7 @@ En la región Noroeste, Caborca es el municipio que ha mantenido niveles de inci
 
 ## EXTRA: Mapa municipal de la incidencia de la semana más reciente en Sonora.
 
-Asimismo se puede obtener el mapa de incidencia semanal de una semana en específico. Para ello se deben descargar los shapefiles de INEGI (https://www.inegi.org.mx/temas/mg/#Descargas), en este caso ya filtrados y manipulados mediante el software QGIS (los cuales se pueden descargar en el repositorio https://github.com/dogomoreno/Covid19-Sonora-Municipios .
+Asimismo se puede obtener el mapa de incidencia semanal de una semana en específico. Para ello se deben descargar los shapefiles de INEGI (https://www.inegi.org.mx/temas/mg/#Descargas), en este caso ya filtrados y manipulados mediante el software QGIS (los cuales se pueden descargar del repositorio https://github.com/dogomoreno/Covid19-Sonora-Municipios .
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 casossempob <-casossempob %>%  mutate(id=CVEGEO) %>% filter(SEMANA==49)
