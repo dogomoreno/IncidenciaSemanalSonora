@@ -16,7 +16,7 @@ El siguiente trabajo plasma la manera de elaborar mapas de calor de la incidenci
 
 # Paquetes
 
-Paquetes necesarios para el manejo de los datos y su graficación
+Paquetes necesarios para el manejo de los datos y su graficación, y creamos los directorios necesarios
 
 ```{r, setup, warning=FALSE, message=FALSE}
 library(tidyverse) # Paquete de paquetes, para manejo y visualización de datos.
@@ -25,6 +25,12 @@ library(showtext) # Permite la carga de fuentes de Google Fonts para la visualiz
 library(Cairo) # Pquete que permite crear imágenes de gran calidad.
 library(rgdal) # Para manejo de datos geoespaciales.
 library(rgeos) # Para manejo de datos geoespaciales.
+
+dir.create("Bases")
+dir.create("Descargas")
+dir.create("Gráficos")
+dir.create("ResultadoCSV")
+dir.create("Shapes")
 ```
 
 # Descarga de datos.
@@ -127,7 +133,7 @@ casossempob <- Casossem %>%
   select(SEMANA, REPORTE, CVEGEO, MUNICIPIO, CLAS_REG, POB, CASOS_SEMANALES)
 ```
 
-Como resultado obtenemos una tabla en formato tidy, la cual guardamos en con extensión csv, cuyo diccionario de datos se puede consultar aquí .
+Como resultado obtenemos una tabla en formato tidy, la cual guardamos en con extensión csv.
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 write.csv(casossempob, 'ResultadoCSV/Casossemanales.csv')
@@ -361,10 +367,15 @@ En la región Noroeste, Caborca es el municipio que ha mantenido niveles de inci
 
 ## EXTRA: Mapa municipal de la incidencia de la semana más reciente en Sonora.
 
-Asimismo se puede obtener el mapa de incidencia semanal de una semana en específico. Para ello se deben descargar los shapefiles de INEGI (https://www.inegi.org.mx/temas/mg/#Descargas), en este caso ya filtrados y manipulados mediante el software QGIS.
+Asimismo se puede obtener el mapa de incidencia semanal de una semana en específico. Para ello se deben descargar los shapefiles de INEGI (https://www.inegi.org.mx/temas/mg/#Descargas), en este caso ya filtrados y manipulados mediante el software QGIS (los cuales se pueden descargar en el repositorio https://github.com/dogomoreno/Covid19-Sonora-Municipios .
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 casossempob <-casossempob %>%  mutate(id=CVEGEO) %>% filter(SEMANA==49)
+
+shape.url <- "https://github.com/dogomoreno/Covid19-Sonora-Municipios/raw/master/Shapes/ShapesSonora.zip"
+shape.archivo <- "./Descargas/ShapesSonora.zip"
+download.file(shape.url, destfile = shape.archivo)  
+unzip(shape.archivo, exdir = "./Shapes")
 
 capa_munison <- readOGR("Shapes", layer="MUNSON")
 capa_reg <- readOGR("Shapes", layer="REGSON")

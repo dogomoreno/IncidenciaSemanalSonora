@@ -1707,13 +1707,19 @@ summary {
 </div>
 <div id="paquetes" class="section level1">
 <h1>Paquetes</h1>
-<p>Paquetes necesarios para el manejo de los datos y su graficación</p>
+<p>Paquetes necesarios para el manejo de los datos y su graficación, y creamos los directorios necesarios</p>
 <pre class="r"><code>library(tidyverse) # Paquete de paquetes, para manejo y visualización de datos.
 library(lubridate) # Manipulación de datos que contienen fechas.
 library(showtext) # Permite la carga de fuentes de Google Fonts para la visualización de datos.
 library(Cairo) # Pquete que permite crear imágenes de gran calidad.
 library(rgdal) # Para manejo de datos geoespaciales.
-library(rgeos) # Para manejo de datos geoespaciales.</code></pre>
+library(rgeos) # Para manejo de datos geoespaciales.
+
+dir.create(&quot;Bases&quot;)
+dir.create(&quot;Descargas&quot;)
+dir.create(&quot;Gráficos&quot;)
+dir.create(&quot;ResultadoCSV&quot;)
+dir.create(&quot;Shapes&quot;)</code></pre>
 </div>
 <div id="descarga-de-datos." class="section level1">
 <h1>Descarga de datos.</h1>
@@ -1731,9 +1737,9 @@ file = paste(getwd(), &#39;/Descargas/pob.rar&#39;, sep = &#39;&#39;)
 dest = paste(getwd(), &#39;/Bases&#39;, sep = &#39;&#39;)
 cmd = paste(z7path, &#39; e &#39;, file, &#39; -ir!*.* -o&#39;, &#39;&quot;&#39;, dest, &#39;&quot;&#39;, sep=&#39;&#39;)
 system(cmd)
-}
-
-POB &lt;- read_csv(pob.final, 
+}</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>POB &lt;- read_csv(pob.final, 
                 col_types = cols(RENGLON = col_character(), 
                                  CLAVE = col_character(), CLAVE_ENT = col_character()), 
                 locale = locale(encoding = &quot;ISO-8859-1&quot;))</code></pre>
@@ -1787,7 +1793,7 @@ Casossem &lt;- group_by(Casossemana, CVEGEO, MUNICIPIO, REPORTE, SEMANA) %&gt;%
   left_join(POBMUN, by = &quot;CVEGEO&quot;) %&gt;% 
   left_join(RegionesSonora, by = &quot;CVEGEO&quot;) %&gt;% 
   select(SEMANA, REPORTE, CVEGEO, MUNICIPIO, CLAS_REG, POB, CASOS_SEMANALES)</code></pre>
-<p>Como resultado obtenemos una tabla en formato tidy, la cual guardamos en con extensión csv, cuyo diccionario de datos se puede consultar aquí .</p>
+<p>Como resultado obtenemos una tabla en formato tidy, la cual guardamos en con extensión csv.</p>
 <pre class="r"><code>write.csv(casossempob, &#39;ResultadoCSV/Casossemanales.csv&#39;)</code></pre>
 </div>
 <div id="cálculo-de-indicadores-y-clasificación" class="section level1">
@@ -1972,8 +1978,13 @@ ggsave(paste(&quot;Gráficos/&quot;,Region,&quot;.png&quot;, sep = &quot;&quot;)
 </div>
 <div id="extra-mapa-municipal-de-la-incidencia-de-la-semana-más-reciente-en-sonora." class="section level2">
 <h2>EXTRA: Mapa municipal de la incidencia de la semana más reciente en Sonora.</h2>
-<p>Asimismo se puede obtener el mapa de incidencia semanal de una semana en específico. Para ello se deben descargar los shapefiles de INEGI (<a href="https://www.inegi.org.mx/temas/mg/#Descargas" class="uri">https://www.inegi.org.mx/temas/mg/#Descargas</a>), en este caso ya filtrados y manipulados mediante el software QGIS.</p>
+<p>Asimismo se puede obtener el mapa de incidencia semanal de una semana en específico. Para ello se deben descargar los shapefiles de INEGI (<a href="https://www.inegi.org.mx/temas/mg/#Descargas" class="uri">https://www.inegi.org.mx/temas/mg/#Descargas</a>), en este caso ya filtrados y manipulados mediante el software QGIS (los cuales se pueden descargar en el repositorio <a href="https://github.com/dogomoreno/Covid19-Sonora-Municipios" class="uri">https://github.com/dogomoreno/Covid19-Sonora-Municipios</a> .</p>
 <pre class="r"><code>casossempob &lt;-casossempob %&gt;%  mutate(id=CVEGEO) %&gt;% filter(SEMANA==49)
+
+shape.url &lt;- &quot;https://github.com/dogomoreno/Covid19-Sonora-Municipios/raw/master/Shapes/ShapesSonora.zip&quot;
+shape.archivo &lt;- &quot;./Descargas/ShapesSonora.zip&quot;
+download.file(shape.url, destfile = shape.archivo)  
+unzip(shape.archivo, exdir = &quot;./Shapes&quot;)
 
 capa_munison &lt;- readOGR(&quot;Shapes&quot;, layer=&quot;MUNSON&quot;)</code></pre>
 <pre><code>## OGR data source with driver: ESRI Shapefile 

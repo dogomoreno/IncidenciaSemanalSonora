@@ -1,6 +1,0 @@
-"0","library(tidyverse) # Paquete de paquetes, para manejo y visualización de datos."
-"0","library(lubridate) # Manipulación de datos que contienen fechas."
-"0","library(showtext) # Permite la carga de fuentes de Google Fonts para la visualización de datos."
-"0","library(Cairo) # Pquete que permite crear imágenes de gran calidad."
-"0","library(rgdal) # Para manejo de datos geoespaciales."
-"0","library(rgeos) # Para manejo de datos geoespaciales."
