@@ -1,0 +1,15 @@
+"0","Casos.url <- ""https://raw.githubusercontent.com/dogomoreno/Covid19-Sonora-Municipios/master/Bases/ST_CasosMunicipalesSonora.csv"""
+"0","Casos.archivo <- ""./Bases/ST_CasosMunicipalesSonora.csv"""
+"0",""
+"0","download.file(Casos.url, destfile = Casos.archivo)"
+"2","probando la URL 'https://raw.githubusercontent.com/dogomoreno/Covid19-Sonora-Municipios/master/Bases/ST_CasosMunicipalesSonora.csv'
+"
+"2","Content type 'text/plain; charset=utf-8'"
+"2"," length 46206 bytes (45 KB)
+"
+"2","downloaded 45 KB
+
+"
+"0","Casosdiarios <- read_csv(""Bases/ST_CasosMunicipalesSonora.csv"","
+"0","                         col_types = cols(CVE_MUN = col_character()),"
+"0","                         locale = locale(encoding = ""ISO-8859-1""))"

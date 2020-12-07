@@ -1,0 +1,109 @@
+"0","# No es posible leer archivos .rar desde R por lo que se hace una llamada al programa 7z, el cual debe ser instalado previamente."
+"0",""
+"0","pob.url <- ""http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/base_municipios_final_datos_02.rar"""
+"0","pob.archivo <- ""./Descargas/pob.rar"""
+"0",""
+"0","if(!file.exists(pob.archivo)){"
+"0","  download.file(pob.url, destfile = pob.archivo)  "
+"0","  z7path = shQuote('C:\\Program Files\\7-Zip\\7z')"
+"0","  file = paste(getwd(), '/Descargas/pob.rar', sep = '')"
+"0","  dest = paste(getwd(), '/Bases', sep = '')"
+"0","  cmd = paste(z7path, ' e ', file, ' -ir!*.* -o', '""', dest, '""', sep='')"
+"0","  system(cmd)"
+"0","}"
+"2","probando la URL 'http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/base_municipios_final_datos_02.rar'
+"
+"2","Content type 'application/x-rar'"
+"2"," length 4177673 bytes (4.0 MB)
+"
+"2","downloaded 4.0 MB
+
+"
+"1","
+"
+"1","7-Zip 19.00 (x64) : Copyright (c) 1999-2018 Igor Pavlov : 2019-02-21
+"
+"1","
+"
+"1","Scanning the drive for archives:
+"
+"1","1 file, 4193951 bytes (4096 KiB)
+"
+"1","
+"
+"1","Extracting archive: C:\Users\luism\OneDrive\R\COVID\IncidenciaSemanalSonora\Descargas\pob.rar
+"
+"1","
+"
+"1","ERRORS:
+"
+"1","Headers Error
+"
+"1","
+"
+"1","
+"
+"1","WARNINGS:
+"
+"1","There are data after the end of archive
+"
+"1","
+"
+"1","--
+"
+"1","Path = C:\Users\luism\OneDrive\R\COVID\IncidenciaSemanalSonora\Descargas\pob.rar
+"
+"1","Type = Rar
+"
+"1","ERRORS:
+"
+"1","Headers Error
+"
+"1","WARNINGS:
+"
+"1","There are data after the end of archive
+"
+"1","Physical Size = 4177666
+"
+"1","Tail Size = 16285
+"
+"1","Solid = -
+"
+"1","Blocks = 1
+"
+"1","Multivolume = -
+"
+"1","Volumes = 1
+"
+"1","
+"
+"1","ERROR: Data Error : base_municipios_final_datos_02.csv
+"
+"1","
+"
+"1","Sub items Errors: 1
+"
+"1","
+"
+"1","Archives with Errors: 1
+"
+"1","
+"
+"1","Warnings: 1
+"
+"1","
+"
+"1","Open Errors: 1
+"
+"1","
+"
+"1","Sub items Errors: 1
+"
+"1","[1]"
+"1"," 2"
+"1","
+"
+"0","POB <- read_csv(""Bases/base_municipios_final_datos_02.csv"", "
+"0","                col_types = cols(RENGLON = col_character(), "
+"0","                                 CLAVE = col_character(), CLAVE_ENT = col_character()), "
+"0","                locale = locale(encoding = ""ISO-8859-1""))"

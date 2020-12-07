@@ -1,0 +1,417 @@
+---
+title: "Proyecto de Probabilidad\n(Matemáticas para Ciencia de Datos)"
+author: "Luis Armando Moreno Preciado"
+date: "03/12/2020"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE, , cache=FALSE}
+library(tidyverse)
+library(extrafont)
+library(scales)
+library(showtext)
+library(tint)
+library(miniUI)
+library(units)
+library(ggfortify)
+library(cowplot)
+
+```
+
+# ¿En México, cuál es la probabilidad de que una persona con covid-19 tarde en acudir a un centro de salud más de dos días desde que inició síntomas?
+
+Cargamos los datos de la base de datos de Covid-19 del Gobierno Federal del 03 de diciembre de 2020, ya tratados con el diccionario de datos.
+
+```{r datos, warning=FALSE}
+mx <- read_csv("02Resultados/MXCOVID2020_12_03.csv", 
+                col_types = cols(X1 = col_skip(), 
+                fecha_actualizacion = col_date(format = "%Y-%m-%d"), 
+                fecha_def = col_date(format = "%Y-%m-%d"), 
+                fecha_ingreso = col_date(format = "%Y-%m-%d"), 
+                fecha_sintomas = col_date(format = "%Y-%m-%d")), 
+                locale = locale(encoding = "ISO-8859-1"))
+```
+
+Calculamos la variable "días_atención", que contiene la cantidad de días que han pasado entre el inicio de síntomas y la fecha de ingreso a una unidad médica.
+
+```{r variable }
+mx <- mx %>% mutate (días_atención = as.integer(as.Date(fecha_ingreso)-as.Date(fecha_sintomas)))
+```
+
+Filtramos los casos confirmados y extraemos del dataset las variables a utilizar, en este caso entidad de la unidad médica, sexo del paciente y la variable calculada de días de atención
+
+```{r atencion }
+atencion <- mx %>% 
+  filter(clasificacion_final_simple=="Caso confirmado") %>% 
+  select(entidad_uni_med, días_atención)
+summary(atencion)
+```
+Se cuentan con 1,144,643 observaciones, la media de días en que los pacientes confirmados tardarn en atenderse en una Unidad Médica es de 4.253, pero hay casos que han tardado hasta 80 días.
+
+Graficamos el histograma de los días de atención
+
+```{r gráfico 1, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+Tema <- theme(plot.title = (element_text(family = "Lato Black", size = 20, color = "#993366")),
+          plot.subtitle = (element_text(family = "Lato", size = 14, color = "black", hjust = -0.4)),
+          legend.position = "none",  plot.margin = margin(0.5, 1, 0.5, 1, "cm"),
+          legend.key.height = unit (4, "cm"), legend.key.width = unit (1, "cm"),  
+        axis.text = element_text(family = "Lato Light", size = 10, color = "black"),
+          legend.text = element_text(family = "Lato Light", size = 14, color = "black"),
+          legend.title = element_text(family = "Lato Black", size = 12, color = "black"),
+          plot.caption = element_text(family = "Lato Light", size = 10, color = "black", face="italic"),
+          axis.title = element_text(family = "Lato", size = 12, color = "black"))
+
+
+ggplot(data=atencion, aes(x=días_atención)) +
+  geom_histogram(bins=50, color="turquoise", fill = "turquoise", alpha=0.5)+
+  scale_y_continuous(labels = comma) + 
+  theme_bw() + Tema +
+    labs(axis = NULL, y = "Observaciones", x = "Días en acudir a una Unidad Médica", title = "República Mexicana",
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+```
+
+
+Por la forma del histograma nos hace suponer que una distribución de probabilidad gamma es la que mejor se ajusta, tomando la media y la varianza de nuestros datos podemos calcular los parámetros dela distribución (a, s)
+
+$E(X) = a*s$
+
+$Var(X) = a*s^2$
+
+Por lo tanto:
+
+$a = media^2 /varianza$ 
+
+$s = varianza / media$
+
+```{r cálculo de parámetros gama nacional, include=FALSE }
+obs <- nrow(atencion)
+
+v <- atencion$días_atención
+
+media <- mean(v)
+var<- var(v)
+sd<- sd(v)
+
+a <- (media^2) /var
+s <- var/media
+```
+
+```{r parámetros gama nacional}
+media
+var
+
+a
+s
+```
+
+Con estos parámetros, graficamos la distribución gamma para observar cómo se ajusta al histograma de la variable.
+
+```{r gráfico 3, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+ggplot(data=atencion, aes(x=días_atención)) +
+  geom_histogram(bins= 40, aes(y=..density..), color="turquoise", fill = "turquoise", alpha=0.5 ) +
+  stat_function(color= "salmon", fun = dgamma, n = obs, args = list( shape= a, scale= s )) + 
+    geom_vline(aes(xintercept = media), colour = "red", linetype ="longdash", size = .8) +
+   theme_bw() + Tema +
+    labs(axis = NULL, y = "Densidad", x = "Días en acudir a una Unidad Médica", title = "República Mexicana",
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+
+```
+
+¿En México, cuál es la probabilidad de que una persona con covid-19 tarde en acudir a un centro de salud más de dos días desde que inició síntomas?
+
+```{r}
+pgamma(2, a, s, lower.tail=FALSE)
+```
+
+En México la probabilidad de que una persona tarde más de dos días en acudir a una unidad médica es de 1.9 por ciento.
+
+# Muestras aleatorias
+
+Como ejercicio podemos tomar muestras de las observaciones contenidas en nuestra tabla de datos y hacer cálculos más eficientes computacionalmente.
+
+En este sentido, tomamos 1000 muestras de 5000 observaciones, a las cuales se les calculará la media y varianza, para obtener los parámetros de la distribución gamma.
+
+Graficamos la media muestral, y las percentiles 0.025 y 0.975 para obtener un intervalo de confianza (líneas punteadas).
+
+```{r muestreo gráfico 4, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+x <- atencion$días_atención
+n <- 5000
+Vmedias <- numeric(n)
+Vvar <- numeric(n)
+for (i in 1:n){muestra <- sample(x, size=1000, replace =T);
+Vmedias[i] <- mean(muestra);
+Vvar [i] <- var(muestra)}
+Muestras <- data.frame(Vmedias, Vvar)
+
+Muestras <- Muestras %>% mutate(a=(Vmedias^2)/Vvar, s=Vvar/Vmedias)
+a025 <- quantile(Muestras$a, probs = 0.025)
+a5  <- quantile(Muestras$a, probs = 0.5)
+a0975 <- quantile(Muestras$a, probs = 0.975)
+s025 <- quantile(Muestras$s, probs = 0.025)
+s5  <- quantile(Muestras$s, probs = 0.5)
+s0975 <- quantile(Muestras$s, probs = 0.975)
+
+ggplot(data=atencion, aes(x=días_atención)) +
+  geom_histogram(bins= 40, aes(y=..density..), color="turquoise", fill = "turquoise", alpha=0.5 ) +
+  stat_function(color= "red", fun = dgamma, n = obs, args = list( shape= a, scale= s )) +
+  stat_function(color= "blue", fun = dgamma, n = obs, args = list( shape= a5, scale= s5), linetype="dashed" ) +
+  stat_function(color= "blue", fun = dgamma, n = obs, args = list( shape= a025, scale= s025), linetype="dashed" ) +
+  stat_function(color= "blue", fun = dgamma, n = obs, args = list( shape= a0975, scale= s0975), linetype="dashed" ) +
+   theme_bw() + Tema +
+    labs(axis = NULL, y = "Densidad", x = "Días en acudir a una Unidad Médica", title = "República Mexicana",
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+
+```
+
+La distribución graficada tomando la media muestral de los parámetros y la distribución graficada tomando los parámetros del universo de datos (línea roja) prácticamente coinciden en su trayectoria.
+
+# Frontera Norte
+
+Con la información de nuestra fuente de datos original podemos obtener la información de los estados y observar si hay cambios en la distribución de los días que pasan los casos confirmados de covid-19 en acudir a un centro de Salud.
+
+```{r gráfico 5,  echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+atencion %>% 
+  filter(entidad_uni_med %in% c("Sonora", "Baja California", "Chihuahua", "Coahuila", "Nuevo León", "Tamaulipas")) %>% 
+ggplot(aes(x=entidad_uni_med,y=días_atención, fill=entidad_uni_med, color = entidad_uni_med)) +
+ geom_violin(alpha=0.1) + geom_boxplot(alpha=0.8) +
+  theme_bw(base_size = 16) + Tema + coord_flip() +
+  labs(axis = NULL, y = "Días en acudir a una Unidad Médica", x = NULL , title = "Frontera Norte de México",
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+```
+
+### Sonora
+
+En primera instancia obtenemos la distribución de Sonora y ajustamos una distribución gama.
+
+```{r }
+Ent <- "Sonora"
+atencionEtal <- atencion %>% filter(entidad_uni_med==Ent)
+obs <- nrow(atencionEtal)
+
+v <- atencionEtal$días_atención
+
+media <- mean(v)
+var<- var(v)
+sd<- sd(v)
+
+a <- (media^2) /var
+s <- var/media 
+summary(atencionEtal)
+```
+
+```{r gráfico 6, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+ggplot(data=atencionEtal, aes(x=días_atención)) +
+  geom_histogram(bins= 40, aes(y=..density..), color="turquoise", fill = "turquoise", alpha=0.5 ) +
+  #geom_density(alpha=0.3, fill= "salmon", color="transparent") +
+  stat_function(color= "salmon", fun = dgamma, n = obs, args = list( shape= a, scale= s )) + 
+    geom_vline(aes(xintercept = media), colour = "red", linetype ="longdash", size = .8) +
+   theme_bw() + Tema +
+     labs(axis = NULL, y = "Densidad", x = "Días en acudir a una Unidad Médica", title = Ent,
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+```
+
+¿En Sonora, cuál es la probabilidad de que una persona con covid-19 tarde en acudir a un centro de salud más de dos días desde que inició síntomas?
+
+```{r}
+pgamma(2, a, s, lower.tail=FALSE)
+```
+
+En Sonora la probabilidad de que una persona tarde más de dos días en acudir a una unidad médica es de 4.4 por ciento.
+
+### Baja California
+
+```{r }
+Ent <- "Baja California"
+atencionEtal <- atencion %>% filter(entidad_uni_med==Ent)
+obs <- nrow(atencionEtal)
+
+v <- atencionEtal$días_atención
+
+media <- mean(v)
+var<- var(v)
+sd<- sd(v)
+
+a <- (media^2) /var
+s <- var/media
+summary(atencionEtal)
+```
+
+```{r gráfico 7, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+ggplot(data=atencionEtal, aes(x=días_atención)) +
+  geom_histogram(bins= 40, aes(y=..density..), color="turquoise", fill = "turquoise", alpha=0.5 ) +
+  #geom_density(alpha=0.3, fill= "salmon", color="transparent") +
+  stat_function(color= "salmon", fun = dgamma, n = obs, args = list( shape= a, scale= s )) + 
+    geom_vline(aes(xintercept = media), colour = "red", linetype ="longdash", size = .8) +
+   theme_bw() + Tema +
+     labs(axis = NULL, y = "Densidad", x = "Días en acudir a una Unidad Médica", title = Ent,
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+```
+
+¿En Baja California, cuál es la probabilidad de que una persona con covid-19 tarde en acudir a un centro de salud más de dos días desde que inició síntomas?
+
+```{r}
+pgamma(2, a, s, lower.tail=FALSE)
+```
+
+En Baja California la probabilidad de que una persona tarde más de dos días en acudir a una unidad médica es de 2 por ciento.
+
+### Chihuahua
+
+```{r}
+Ent <- "Chihuahua"
+atencionEtal <- atencion %>% filter(entidad_uni_med==Ent)
+obs <- nrow(atencionEtal)
+
+v <- atencionEtal$días_atención
+
+media <- mean(v)
+var<- var(v)
+sd<- sd(v)
+
+a <- (media^2) /var
+s <- var/media
+summary(atencionEtal)
+```
+
+```{r gráfico 8, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+ggplot(data=atencionEtal, aes(x=días_atención)) +
+  geom_histogram(bins= 40, aes(y=..density..), color="turquoise", fill = "turquoise", alpha=0.5 ) +
+  #geom_density(alpha=0.3, fill= "salmon", color="transparent") +
+  stat_function(color= "salmon", fun = dgamma, n = obs, args = list( shape= a, scale= s )) + 
+    geom_vline(aes(xintercept = media), colour = "red", linetype ="longdash", size = .8) +
+   theme_bw() + Tema +
+     labs(axis = NULL, y = "Densidad", x = "Días en acudir a una Unidad Médica", title = Ent,
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+```
+
+La mayoría de los casos confirmados de covid-19 se atiende el mismo día de haber iniciado síntomas. En el caso de Chihuahua, la distribución de probabilidad gamma pudiera no ser la que mejor se ajusta a la distribución de los datos observados.
+
+¿En Chihuahua, cuál es la probabilidad de que una persona con covid-19 tarde en acudir a un centro de salud más de dos días desde que inició síntomas?
+
+Suponiendo que la distribución gamma es la que mejor se ajusta:
+
+```{r}
+pgamma(2, a, s, lower.tail=FALSE)
+```
+
+En Chihuahua la probabilidad de que una persona tarde más de dos días en acudir a una unidad médica es de 0.7 por ciento.
+
+### Coahuila
+
+```{r }
+
+Ent <- "Coahuila"
+atencionEtal <- atencion %>% filter(entidad_uni_med==Ent)
+obs <- nrow(atencionEtal)
+
+v <- atencionEtal$días_atención
+
+media <- mean(v)
+var<- var(v)
+sd<- sd(v)
+
+a <- (media^2) /var
+s <- var/media
+summary(atencionEtal)
+```
+
+```{r gráfico 9, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+ggplot(data=atencionEtal, aes(x=días_atención)) +
+  geom_histogram(bins= 40, aes(y=..density..), color="turquoise", fill = "turquoise", alpha=0.5 ) +
+  #geom_density(alpha=0.3, fill= "salmon", color="transparent") +
+  stat_function(color= "salmon", fun = dgamma, n = obs, args = list( shape= a, scale= s )) + 
+    geom_vline(aes(xintercept = media), colour = "red", linetype ="longdash", size = .8) +
+   theme_bw() + Tema +
+     labs(axis = NULL, y = "Densidad", x = "Días en acudir a una Unidad Médica", title = Ent,
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+```
+
+¿En Coahuila, cuál es la probabilidad de que una persona con covid-19 tarde en acudir a un centro de salud más de dos días desde que inició síntomas?
+
+```{r}
+pgamma(2, a, s, lower.tail=FALSE)
+```
+
+En Coahuila la probabilidad de que una persona tarde más de dos días en acudir a una unidad médica es de 0.65 por ciento.
+
+### Tamaulipas
+
+```{r}
+Ent <- "Tamaulipas"
+atencionEtal <- atencion %>% filter(entidad_uni_med==Ent)
+obs <- nrow(atencionEtal)
+
+v <- atencionEtal$días_atención
+
+media <- mean(v)
+var<- var(v)
+sd<- sd(v)
+
+a <- (media^2) /var
+s <- var/media
+summary(atencionEtal)
+```
+
+```{r gráfico 10, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+ggplot(data=atencionEtal, aes(x=días_atención)) +
+  geom_histogram(bins= 40, aes(y=..density..), color="turquoise", fill = "turquoise", alpha=0.5 ) +
+  #geom_density(alpha=0.3, fill= "salmon", color="transparent") +
+  stat_function(color= "salmon", fun = dgamma, n = obs, args = list( shape= a, scale= s )) + 
+    geom_vline(aes(xintercept = media), colour = "red", linetype ="longdash", size = .8) +
+   theme_bw() + Tema +
+     labs(axis = NULL, y = "Densidad", x = "Días en acudir a una Unidad Médica", title = Ent,
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+```
+
+Como en el caso de Chihuahua, la mayoría de las observaciones fueron atendidas el mismo día que iniciaron síntomas. En este caso, la distribución de probabilidad tipo gama pudiera no ser la que mejor se ajusta a la distribución de lo datos.
+
+¿En Tamaulipas, cuál es la probabilidad de que una persona con covid-19 tarde en acudir a un centro de salud más de dos días desde que inició síntomas?
+
+Suponiendo que la distribución gama es la que mejor se ajusta:
+
+```{r}
+pgamma(2, a, s, lower.tail=FALSE)
+```
+
+En Tamaulipas la probabilidad de que una persona tarde más de dos días en acudir a una unidad médica es de 1.2 por ciento.
+
+### Nuevo León
+
+```{r}
+Ent <- "Nuevo León"
+atencionEtal <- atencion %>% filter(entidad_uni_med==Ent)
+obs <- nrow(atencionEtal)
+
+v <- atencionEtal$días_atención
+
+media <- mean(v)
+var<- var(v)
+sd<- sd(v)
+
+a <- (media^2) /var
+s <- var/media
+
+summary(atencionEtal)
+```
+
+```{r gráfico 11, echo=FALSE, dpi=800, fig.width=7, fig.height=5}
+ggplot(data=atencionEtal, aes(x=días_atención)) +
+  geom_histogram(bins= 40, aes(y=..density..), color="turquoise", fill = "turquoise", alpha=0.5 ) +
+  #geom_density(alpha=0.3, fill= "salmon", color="transparent") +
+  stat_function(color= "salmon", fun = dgamma, n = obs, args = list( shape= a, scale= s )) + 
+    geom_vline(aes(xintercept = media), colour = "red", linetype ="longdash", size = .8) +
+   theme_bw() + Tema +
+     labs(axis = NULL, y = "Densidad", x = "Días en acudir a una Unidad Médica", title = Ent,
+         caption ="Elaboración Luis Armando Moreno con información de la Secretaría de Salud federal")
+
+```
+
+¿En Nuevo León, cuál es la probabilidad de que una persona con covid-19 tarde en acudir a un centro de salud más de dos días desde que inició síntomas?
+
+```{r}
+pgamma(2, a, s, lower.tail=FALSE)
+```
+
+En Tamaulipas la probabilidad de que una persona tarde más de dos días en acudir a una unidad médica es de 2.4 por ciento.

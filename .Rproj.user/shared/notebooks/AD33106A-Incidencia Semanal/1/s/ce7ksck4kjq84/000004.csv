@@ -1,0 +1,3 @@
+"0","casossempob <-casossempob %>%  mutate(id=CVEGEO) %>% filter(SEMANA==49)"
+"2","Error in mutate(., id = CVEGEO) : objeto 'casossempob' no encontrado
+"
