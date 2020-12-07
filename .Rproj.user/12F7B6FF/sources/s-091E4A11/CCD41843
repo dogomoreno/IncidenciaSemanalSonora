@@ -3,7 +3,7 @@
     "path": "C:/Users/luism/OneDrive/R/COVID/IncidenciaSemanalSonora/Incidencia Semanal.Rmd",
     "project_path": "Incidencia Semanal.Rmd",
     "type": "r_markdown",
-    "hash": "0",
+    "hash": "3564107496",
     "contents": "",
     "dirty": false,
     "created": 1607233842614.0,
@@ -13,15 +13,15 @@
         "chunk_output_type": "inline",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "205,66",
-        "scrollLine": "177"
+        "cursorPosition": "336,0",
+        "scrollLine": "359"
     },
     "folds": "",
-    "lastKnownWriteTime": 1607310588,
+    "lastKnownWriteTime": 1607315574,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1607310588953,
+    "last_content_update": 1607315574633,
     "read_only": false,
     "read_only_alternatives": []
 }

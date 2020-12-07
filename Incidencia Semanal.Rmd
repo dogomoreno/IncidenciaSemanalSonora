@@ -257,6 +257,7 @@ ggsave(paste("Gráficos/",Region,".png", sep = ""),IncidenciaG, bg = "white", he
 
 ![](./Gráficos/Sierra Alta.png)
 En la región Sierra ALta, Nacozari presenta niveles de contagio muy altos en las últimas dos semanas, mientras que en Agua Prieta la presencia del virus ha sido constante. En el resto de la regió se observa mayor presencia del virus en municipios donde en semanas anteriores se mantenían libres de contagios.
+
 ## Sierra Centro.
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
@@ -282,6 +283,7 @@ ggsave(paste("Gráficos/",Region,".png", sep = ""),IncidenciaG, bg = "white", he
 
 ![](./Gráficos/Sierra Centro.png)
 La regió Sierra Centro es la de menor presencia de covid-19 en el Estado, sin embargo se registra un gran número de contagios en comparación a la población durante las últimas dos semanas en Sahuaripa y Arivechi.
+
 ## Sur.
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
@@ -306,6 +308,7 @@ ggsave(paste("Gráficos/",Region,".png", sep = ""),IncidenciaG, bg = "white", he
 
 ![](./Gráficos/Sur.png)
 La región Sur de SOnora, tuvo un gran número de contagios alrededor de la semana 32 con un descenso a partir del mes de septiembre. Sin embargo, en el último mes se observa un aumento constante en los niveles de incidencia, aunque bajos en comparación con otras regiones. 
+
 ## Centro Norte.
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
@@ -330,6 +333,7 @@ ggsave(paste("Gráficos/",Region,".png", sep = ""),IncidenciaG, bg = "white", he
 
 ![](./Gráficos/Centro Norte.png)
 En la región Centro Norte, podemos notar que si bien el pico de la pandemia en Hermosillo ocurrió alrededor de la semana 31 (la última de julio), no bajaron los contagios a niveles bajos, dado que la incidencia de contagios se mantuco en los niveles medios y altos, con un aumento considerable en la última semana. A su vez, es preocupante la incidencia en el municipio de Santa Ana en el último mes con trayectoria ascendente.
+
 ## Noroeste.
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
